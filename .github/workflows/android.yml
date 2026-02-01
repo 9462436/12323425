@@ -1,0 +1,30 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action-v1
+        id: buildozer
+        with:
+          command: buildozer android debug
+          buildozer_version: master
+          workdir: FundMonitor-main
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: package
+          path: FundMonitor-main/bin/*.apk
