@@ -63,6 +63,9 @@ jobs:
           sed -i 's/^#android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
           sed -i 's/^android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
           
+          # 增加 NDK 下载重试机制，防止网络超时
+          export BUILDOZER_ALLOW_ORG_GRADLE_DAEMON=true
+          
           # 清理并构建
           yes | buildozer android clean
           yes | buildozer -v android debug
