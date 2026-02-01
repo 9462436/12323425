@@ -20,6 +20,7 @@ jobs:
         with:
           python-version: '3.10'
 
+      # 安装系统依赖（精简版，去掉可能冲突的包）
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
@@ -45,19 +46,29 @@ jobs:
             unzip \
             autoconf \
             libtool \
-            pkg-config
+            pkg-config \
+            openjdk-17-jdk
 
-      - name: Install Buildozer and Cython
+      # 专门安装 Android SDK/NDK 工具链
+      - name: Install Android SDK tools
         run: |
           pip install --upgrade pip
-          pip install buildozer cython==0.29.36
+          # 安装指定版本的 buildozer，避免最新版可能的不稳定
+          pip install buildozer==1.5.0 cython==0.29.36
+
+      # 初始化 Buildozer（这步很重要，自动下载 SDK/NDK）
+      - name: Init Buildozer
+        run: |
+          cd FundMonitor-main
+          # 仅初始化，不构建，确保环境 ready
+          buildozer --version
 
       - name: Build with Buildozer
         run: |
           cd FundMonitor-main
-          # 接受协议并清理可能存在的旧构建
-          yes | buildozer android clean
-          yes | buildozer android debug
+          # 增加 verbose 模式 (-v) 以便查看详细报错
+          # 自动接受 license
+          yes | buildozer -v android debug
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
