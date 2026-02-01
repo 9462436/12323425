@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout code
@@ -18,9 +18,8 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.9'
 
-      # 安装系统依赖（完整版）
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
@@ -54,20 +53,18 @@ jobs:
       - name: Install Android SDK tools
         run: |
           pip install --upgrade pip
-          # 降低 cython 版本以兼容 kivy
           pip install buildozer==1.5.0 cython==0.29.33
-
-      # 增加权限修正
-      - name: Fix permissions
-        run: |
-          chmod -R 777 .
 
       - name: Build with Buildozer
         run: |
           cd FundMonitor-main
-          # 清理环境
+          # 强制更新 buildozer.spec 中的 SDK/NDK 设置，使用默认值让 buildozer 自动下载
+          # 这一步是为了确保不会因为 spec 文件里的旧设置导致下载失败
+          sed -i 's/^#android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
+          sed -i 's/^android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
+          
+          # 清理并构建
           yes | buildozer android clean
-          # 开始构建
           yes | buildozer -v android debug
 
       - name: Upload artifacts
